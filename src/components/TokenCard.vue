@@ -38,7 +38,13 @@
               </button>
             </div>
           </div>
-          <!-- 第二行：Portal信息 -->
+          <!-- 第二行：注册时间和到期时间 -->
+          <div v-if="token.regist_date || token.mdate_date" class="meta-row time-row">
+            <span v-if="token.regist_date" class="time-meta regist">注册: {{ formatDateOnly(token.regist_date) }}</span>
+            <span v-if="token.mdate_date" class="time-meta expiry">到期: {{ formatDateOnly(token.mdate_date) }}</span>
+          </div>
+
+          <!-- 第三行：Portal信息 -->
           <template v-if="token.portal_url">
             <div class="meta-row portal-row">
               <!-- 优先显示Portal数据，无论是来自本地缓存还是网络请求 -->
@@ -66,22 +72,6 @@
         <button @click="copyTenantUrl" class="btn-action" title="复制租户URL">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
-          </svg>
-        </button>
-        <button @click="checkAccountStatus" :class="['btn-action', 'status-check', { loading: isCheckingStatus }]" :disabled="isCheckingStatus" title="检测账号状态">
-          <svg v-if="!isCheckingStatus" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-          </svg>
-          <div v-else class="loading-spinner"></div>
-        </button>
-        <button v-if="token.portal_url" @click="$emit('open-portal', token)" class="btn-action portal" title="打开Portal">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-          </svg>
-        </button>
-        <button @click="$emit('edit', token)" class="btn-action edit" title="编辑Token">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
           </svg>
         </button>
         <button @click="deleteToken" class="btn-action delete" title="删除Token">
@@ -399,6 +389,16 @@ const formatDate = (dateString) => {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
+  })
+}
+
+// 格式化日期，只显示年月日
+const formatDateOnly = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
   })
 }
 
@@ -1093,6 +1093,10 @@ defineExpose({
   flex-wrap: wrap;
 }
 
+.time-row {
+  margin-top: 2px;
+}
+
 .portal-row {
   margin-top: 2px;
 }
@@ -1181,6 +1185,25 @@ defineExpose({
 .portal-meta.balance {
   color: #155724;
   background: #d4edda;
+  font-weight: 600;
+}
+
+/* 时间信息样式 */
+.time-meta {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.time-meta.regist {
+  color: #0c5460;
+  background: #d1ecf1;
+}
+
+.time-meta.expiry {
+  color: #721c24;
+  background: #f8d7da;
   font-weight: 600;
 }
 
