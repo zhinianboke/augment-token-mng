@@ -34,11 +34,13 @@ if (!(Test-Path $outputDir)) {
 # 1. 构建Windows版本
 Write-Host "🪟 构建Windows版本..." -ForegroundColor Blue
 
-# 确保配置正确（Windows + Mac targets）
+# 确保配置正确（仅Windows targets）
 $configPath = "src-tauri\tauri.conf.json"
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 $config.bundle.targets = @("nsis", "msi")
 $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
+
+Write-Host "   📝 已更新配置为Windows专用" -ForegroundColor Gray
 
 Write-Host "   📦 开始编译..." -ForegroundColor Gray
 npm run tauri build
