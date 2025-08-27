@@ -1,0 +1,34 @@
+name: Mac Build Only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source ~/.cargo/env
+          
+      - name: Install deps
+        run: npm install
+        
+      - name: Build
+        run: |
+          npm run build
+          cd src-tauri
+          cargo build --release
+          
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-executable
+          path: src-tauri/target/release/ATM
