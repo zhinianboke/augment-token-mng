@@ -44,7 +44,7 @@
                 placeholder="https://portal.withorb.com/view?token=xxx"
                 :disabled="isLoading"
               >
-              <div class="help-text">用于查看账户余额和过期时间</div>
+              <div class="help-text">用于查看账户余额和过期时间。通过卡密获取的Token会自动填入此字段。</div>
               <div v-if="errors.portalUrl" class="error-message">{{ errors.portalUrl }}</div>
             </div>
 

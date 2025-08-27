@@ -1,36 +1,34 @@
-name: Build and Release
+name: Build Multi-Platform
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   build:
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: macos-latest
-            target: aarch64-apple-darwin
-            name: Apple Silicon
-            rust-target: aarch64-apple-darwin
-          - platform: macos-latest
-            target: x86_64-apple-darwin
-            name: Intel
-            rust-target: x86_64-apple-darwin
+            target: universal-apple-darwin
+            name: macOS Universal
+            rust-target: universal-apple-darwin
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            name: Windows
+            name: Windows x64
             rust-target: x86_64-pc-windows-msvc
+
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-
 
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
@@ -53,17 +51,30 @@ jobs:
           cache: 'npm'
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'OAuth Token Generator v${{ github.ref_name }} (${{ matrix.name }})'
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: true
-          prerelease: false
           args: --verbose --target ${{ matrix.target }}
-          artifactName: ${{ matrix.name }}
+
+      - name: Upload Windows artifacts
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.name }}
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+            src-tauri/target/${{ matrix.target }}/release/*.exe
+
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.name }}
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app

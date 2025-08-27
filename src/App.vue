@@ -8,12 +8,7 @@
       </div>
       <div class="header-buttons">
         <!-- Feature buttons -->
-        <button @click="showDatabaseConfig = true" class="btn info">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4zM4 9v3c0 2.21 3.58 4 8 4s8-1.79 8-4V9c0 2.21-3.58 4-8 4s-8-1.79-8-4zM4 16v3c0 2.21 3.58 4 8 4s8-1.79 8-4v-3c0 2.21-3.58 4-8 4s-8-1.79-8-4z"/>
-          </svg>
-          数据库配置
-        </button>
+        <!-- 数据库配置按钮已隐藏 -->
         <button @click="showTokenList = true" class="btn primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
@@ -32,10 +27,10 @@
               <h2>生成Augment Token</h2>
               <p>按照以下步骤获取你的Augment访问令牌</p>
             </div>
-            <!-- Sync Status Component -->
-            <div class="sync-status-container">
+            <!-- Sync Status Component - 已隐藏 -->
+            <!-- <div class="sync-status-container">
               <SyncStatus @show-status="showStatus" />
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -168,14 +163,14 @@
 
 
 
-    <!-- Database Config Modal -->
-    <DatabaseConfig
+    <!-- Database Config Modal - 已隐藏 -->
+    <!-- <DatabaseConfig
       v-if="showDatabaseConfig"
       @close="showDatabaseConfig = false"
       @show-status="showStatus"
       @config-saved="handleDatabaseConfigSaved"
       @config-deleted="handleDatabaseConfigDeleted"
-    />
+    /> -->
 
     <!-- Status Messages -->
     <div
@@ -229,15 +224,15 @@ import { invoke } from '@tauri-apps/api/core'
 import TokenCard from './components/TokenCard.vue'
 import TokenList from './components/TokenList.vue'
 import TokenForm from './components/TokenForm.vue'
-import DatabaseConfig from './components/DatabaseConfig.vue'
-import SyncStatus from './components/SyncStatus.vue'
+// import DatabaseConfig from './components/DatabaseConfig.vue' // 已隐藏
+// import SyncStatus from './components/SyncStatus.vue' // 已隐藏
 
 // 简化的状态管理
 const tokens = ref([])
 const isLoading = ref(false)
 const showTokenList = ref(false)
 
-const showDatabaseConfig = ref(false)
+// const showDatabaseConfig = ref(false) // 已隐藏数据库配置
 const statusMessage = ref('')
 const statusType = ref('info')
 const hasUnsavedChanges = ref(false)
@@ -518,11 +513,12 @@ const autoSaveAndShowTokens = async () => {
       return
     }
 
-    // 创建新的 token 对象
+    // 创建新的 token 对象，使用从接口获取的Portal URL
+    const portalUrl = quotaInfo.value?.portal_url || null
     const newToken = createNewToken(
       tenantUrl,
       accessToken,
-      null, // Portal URL 不再使用
+      portalUrl, // 使用从接口获取的Portal URL
       emailNote.value.trim() || null
     )
 
@@ -586,12 +582,30 @@ const getTokenByKey = async () => {
       manualTenantUrl.value = result.data.zuhu
       emailNote.value = result.data.email || ''
 
-      // 保存额度信息和时间信息
-      quotaInfo.value = {
-        total: result.data.total,
-        remaining_quota: result.data.remaining_quota,
-        regist_date: result.data.regist_date,
-        mdate_date: result.data.mdate_date
+      // 自动设置Portal URL为接口返回的yuechaxun字段
+      if (result.data.yuechaxun) {
+        // 这里可以添加Portal URL的处理逻辑
+        // 如果yuechaxun是完整的URL，直接使用；如果是token，需要构建完整URL
+        const portalUrl = result.data.yuechaxun.startsWith('http')
+          ? result.data.yuechaxun
+          : `https://portal.withorb.com/view?token=${result.data.yuechaxun}`
+
+        // 将Portal URL保存到quotaInfo中，后续创建token时使用
+        quotaInfo.value = {
+          total: result.data.total,
+          remaining_quota: result.data.remaining_quota,
+          regist_date: result.data.regist_date,
+          mdate_date: result.data.mdate_date,
+          portal_url: portalUrl // 新增Portal URL字段
+        }
+      } else {
+        // 保存额度信息和时间信息（没有yuechaxun字段的情况）
+        quotaInfo.value = {
+          total: result.data.total,
+          remaining_quota: result.data.remaining_quota,
+          regist_date: result.data.regist_date,
+          mdate_date: result.data.mdate_date
+        }
       }
 
       // 同时也放入步骤2的授权码框中（如果用户需要查看原始数据）
@@ -624,11 +638,12 @@ const saveToken = async () => {
       return
     }
 
-    // 创建新的 token 对象
+    // 创建新的 token 对象，使用从接口获取的Portal URL
+    const portalUrl = quotaInfo.value?.portal_url || null
     const newToken = createNewToken(
       tenantUrl,
       accessToken,
-      null, // Portal URL 不再使用
+      portalUrl, // 使用从接口获取的Portal URL
       emailNote.value.trim() || null
     )
 
@@ -813,16 +828,16 @@ const openPortalInternal = async () => {
 
 
 
-// Database config event handlers
-const handleDatabaseConfigSaved = () => {
-  showStatus('数据库配置已保存，存储功能已更新', 'success')
-  // 可以在这里刷新同步状态或重新加载tokens
-}
+// Database config event handlers - 已隐藏
+// const handleDatabaseConfigSaved = () => {
+//   showStatus('数据库配置已保存，存储功能已更新', 'success')
+//   // 可以在这里刷新同步状态或重新加载tokens
+// }
 
-const handleDatabaseConfigDeleted = () => {
-  showStatus('数据库配置已删除，已切换到仅本地存储', 'info')
-  // 可以在这里刷新同步状态
-}
+// const handleDatabaseConfigDeleted = () => {
+//   showStatus('数据库配置已删除，已切换到仅本地存储', 'info')
+//   // 可以在这里刷新同步状态
+// }
 
 // Initialize
 onMounted(async () => {

@@ -38,11 +38,7 @@
               </button>
             </div>
           </div>
-          <!-- 第二行：注册时间和到期时间 -->
-          <div v-if="token.regist_date || token.mdate_date" class="meta-row time-row">
-            <span v-if="token.regist_date" class="time-meta regist">注册: {{ formatDateOnly(token.regist_date) }}</span>
-            <span v-if="token.mdate_date" class="time-meta expiry">到期: {{ formatDateOnly(token.mdate_date) }}</span>
-          </div>
+
 
           <!-- 第三行：Portal信息 -->
           <template v-if="token.portal_url">

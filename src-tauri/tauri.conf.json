@@ -21,12 +21,12 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost https://oauth.example.com"
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost https://oauth.augmentcode.com https://portal.withorb.com https://aug.zhinianblog.cn https://login.microsoftonline.com https://outlook.office365.com https://* http://*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis", "msi", "dmg", "app"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
